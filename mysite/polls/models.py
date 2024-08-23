@@ -39,7 +39,6 @@ class Item_Purchase(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, null=True)
     quantity = models.IntegerField(default=1)
 
-
 class SimplePurchase(models.Model):
     created_at = models.DateTimeField(db_default=Now(), primary_key=True)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True)

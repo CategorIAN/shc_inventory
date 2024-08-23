@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to the Polls Homepage!</title>
+</head>
+<body>
+<p>Choose a form: </p>
+<ul>
+    <li><a href = "{% url 'polls:simplepurchase' %}">Simple Purchase</a></li>
+    <li><a href = "{% url 'polls:purchase_initial' %}">Full Purchase</a></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,5 @@
+<form action="{% url 'polls:enter_initial' %}" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Next">
+</form>

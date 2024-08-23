@@ -1,6 +1,5 @@
 from django.http import HttpResponseRedirect
-from .models import (SimplePurchaseForm, PurchaseForm, Employee, Department, Item_Purchase, Purchase, Item_Purchase_Form,
-                     getItemPurchaseForm)
+from .models import SimplePurchaseForm, PurchaseForm, Employee, Department, Item_Purchase, Purchase, getItemPurchaseForm
 from django.shortcuts import render
 from django.forms import modelformset_factory
 
@@ -36,20 +35,13 @@ def purchase_items(request, employee, dept):
     form = getItemPurchaseForm(purchase.pk)
     IPFormSet = modelformset_factory(Item_Purchase, form=form, min_num=2)
     formset = IPFormSet(queryset=Item_Purchase.objects.none())
-    context = {"employee": employee, "dept": dept, "formset": formset}
+    context = {"id": purchase.pk, "employee": employee, "dept": dept, "formset": formset}
     return render(request, "polls/purchase_items.html", context)
-'''
+
 def submit_purchase(request, id):
     form = getItemPurchaseForm(id)
     RIPFormSet = modelformset_factory(Item_Purchase, form=form)
     formset = RIPFormSet(request.POST)
-    formset.save()
-    return HttpResponseRedirect("/polls/thanks")
-'''
-
-def submit_purchase(request):
-    IPFormSet = modelformset_factory(Item_Purchase, form=Item_Purchase_Form)
-    formset = IPFormSet(request.POST)
     formset.save()
     return HttpResponseRedirect("/polls/thanks")
 

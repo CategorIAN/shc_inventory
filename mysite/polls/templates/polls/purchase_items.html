@@ -1,6 +1,6 @@
 <p>Hello, {{employee.name}}! What are you purchasing for {{dept.name}}, today?</p>
 
-<form action="{% url 'polls:submit_purchase'%}" method="post">
+<form action="{% url 'polls:submit_purchase' id %}" method="post">
     {% csrf_token %}
     {{ formset }}
     <input type="submit" value="Submit">

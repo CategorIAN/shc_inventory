@@ -19,6 +19,7 @@ class Item(models.Model):
     def __str__(self):
         return "{} (${})".format(self.name, self.cost)
 
+
 class Employee(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
@@ -37,6 +38,7 @@ class Item_Purchase(models.Model):
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, null=True)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, null=True)
     quantity = models.IntegerField(default=1)
+
 
 class SimplePurchase(models.Model):
     created_at = models.DateTimeField(db_default=Now(), primary_key=True)

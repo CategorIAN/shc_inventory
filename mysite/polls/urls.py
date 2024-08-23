@@ -16,7 +16,7 @@ urlpatterns = [
     path("do_nothing/", views.do_nothing, name="do_nothing"),
     path("modelform_to_model/", views.modelform_to_model, name="modelform_to_model"),
     path("enter_initial/", views.enter_initial, name="enter_initial"),
-    path("submit_purchase/", views.submit_purchase, name="submit_purchase"),
+    path("submit_purchase/<id>/", views.submit_purchase, name="submit_purchase"),
     #=====Submission Response=================
     path("thanks/", views.thanks, name="thanks"),
 ]

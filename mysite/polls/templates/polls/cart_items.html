@@ -1,0 +1,24 @@
+<h1>Shopping Cart!</h1>
+<p>Hello, {{employee.name}}! What are you purchasing for {{dept.name}}, today?</p>
+
+
+<form action="{% url 'polls:cart_save' employee.id dept.cost_center %}" method="post">
+    {% csrf_token %}
+    <p>This will go to "{% url 'polls:cart_save' employee.id dept.cost_center %}".</p>
+    <h2>Formset 1</h2>
+    {{ formset_1.management_form }}
+    <table>
+        {% for form in formset_1 %}
+        {{ form }}
+        {% endfor %}
+    </table>
+    <h2>Formset 2</h2>
+    {{ formset_2.management_form }}
+    <table>
+        {% for form in formset_2 %}
+        {{ form }}
+        {% endfor %}
+    </table>
+    <input type="submit" name="add_item" value="Add Items">
+    <input type="submit" name="checkout" value="Checkout">
+</form>

@@ -1,0 +1,5 @@
+<form action="{% url 'polls:cart_contact_get' %}" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Next">
+</form>

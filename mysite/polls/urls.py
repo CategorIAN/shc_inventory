@@ -22,8 +22,8 @@ urlpatterns = [
 ] + [
     path("cart_contact/", views.cart_contact, name="cart_contact"),
     path("cart_contact_get/", views.cart_contact_get, name="cart_contact_get"),
-    path("cart_items/<employee>/<dept>/", views.cart_items, name="cart_items"),
-    path("cart_save/<employee>/<dept>/", views.cart_save, name="cart_save")
+    path("cart_items/<id>/", views.cart_items, name="cart_items"),
+    path("cart_save/<id>/", views.cart_save, name="cart_save")
 ]
 
 #A purchase has purchase_contact, purchase_contact_get, purchase_items, purchase_save, and thanks.

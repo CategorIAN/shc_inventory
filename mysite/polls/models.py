@@ -39,6 +39,11 @@ class Item_Purchase(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, null=True)
     quantity = models.IntegerField(default=1)
 
+class Cart(models.Model):
+    purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, null=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, null=True)
+    quantity = models.IntegerField(default=1)
+
 class SimplePurchase(models.Model):
     created_at = models.DateTimeField(db_default=Now(), primary_key=True)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True)
@@ -63,6 +68,11 @@ class Item_Purchase_Form(ModelForm):
         model = Item_Purchase
         fields = ["purchase", "item", "quantity"]
 
+class Cart_Form(ModelForm):
+    class Meta:
+        model = Cart
+        fields = ["purchase", "item", "quantity"]
+
 def getItemPurchaseForm(purchase_id):
     class IPF(Item_Purchase_Form):
         def __init__(self, *args, **kwargs):
@@ -72,3 +82,23 @@ def getItemPurchaseForm(purchase_id):
             super().__init__(*args, **kwargs)
             self.fields["purchase"].widget = forms.HiddenInput()
     return IPF
+
+def getCart(purchase_id, edit=True):
+    class X(Cart_Form):
+        def __init__(self, *args, **kwargs):
+            initial = kwargs.get('initial', {})
+            initial["purchase"] = Purchase.objects.get(pk=purchase_id)
+            kwargs['initial'] = initial
+            super().__init__(*args, **kwargs)
+            self.fields["purchase"].widget = forms.HiddenInput()
+            if not edit:
+                self.fields["item"].disabled = True
+                self.fields["quantity"].disabled = True
+    return X
+
+def checkout_cart():
+    for cart_item in Cart.objects.all():
+        item_purchase = Item_Purchase(purchase=cart_item.purchase, item=cart_item.item, quantity=cart_item.quantity)
+        item_purchase.save()
+    Cart.objects.all().delete()
+

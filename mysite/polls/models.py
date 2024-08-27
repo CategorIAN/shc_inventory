@@ -73,6 +73,13 @@ class Cart_Form(ModelForm):
         model = Cart
         fields = ["purchase", "item", "quantity"]
 
+#===========================================================================================
+class ItemChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return f'{obj.name} ({obj.id})'
+
+#===========================================================================================
+
 def getItemPurchaseForm(purchase_id):
     class IPF(Item_Purchase_Form):
         def __init__(self, *args, **kwargs):
@@ -83,11 +90,13 @@ def getItemPurchaseForm(purchase_id):
             self.fields["purchase"].widget = forms.HiddenInput()
     return IPF
 
-def getCart(purchase_id, edit=True):
+def getCart(purchase_id, edit=True, barcode=None):
     class X(Cart_Form):
         def __init__(self, *args, **kwargs):
             initial = kwargs.get('initial', {})
             initial["purchase"] = Purchase.objects.get(pk=purchase_id)
+            if barcode is not None:
+                initial["item"] = Item.objects.get(id=barcode)
             kwargs['initial'] = initial
             super().__init__(*args, **kwargs)
             self.fields["purchase"].widget = forms.HiddenInput()

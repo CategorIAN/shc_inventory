@@ -82,4 +82,51 @@ def cart_save(request, id):
         checkout_cart()
         return HttpResponseRedirect("/polls/thanks")
 #==================================================================================================================
+def cart2_contact(request):
+    return render(request, "polls/cart2_contact.html", {"form": PurchaseForm()})
 
+def cart2_contact_get(request):
+    initial = PurchaseForm(request.POST)
+    employee, dept = initial.data['employee'], initial.data['dept']
+    employee_obj = Employee.objects.get(id=employee)
+    dept_obj = Department.objects.get(cost_center=dept)
+    purchase = Purchase(employee=employee_obj, dept=dept_obj)
+    purchase.save()
+    return HttpResponseRedirect("/polls/cart2_items/{}".format(purchase.pk))
+
+def cart2_items(request, id):
+    purchase = Purchase.objects.get(pk=id)
+    Enter_Class = modelformset_factory(Cart, form=getCart(id, edit=True), max_num=1)
+    Cart_Class = modelformset_factory(Cart, form=getCart(id, edit=False), max_num=0)
+    add_item = Enter_Class(queryset=Cart.objects.none(), prefix="add_item")
+    cart = Cart_Class(queryset=Cart.objects.filter(purchase=id), prefix="cart")
+    context = {"purchase": purchase, "formset_1": add_item, "formset_2": cart}
+    return render(request, "polls/cart2_items.html", context)
+
+def cart2_items_search(request, id, barcode):
+    purchase = Purchase.objects.get(pk=id)
+    Enter_Class = modelformset_factory(Cart, form=getCart(id, edit=True, barcode=barcode), max_num=1)
+    Cart_Class = modelformset_factory(Cart, form=getCart(id, edit=False), max_num=0)
+    add_item = Enter_Class(queryset=Cart.objects.none(), prefix="add_item")
+    cart = Cart_Class(queryset=Cart.objects.filter(purchase=id), prefix="cart")
+    context = {"purchase": purchase, "formset_1": add_item, "formset_2": cart}
+    return render(request, "polls/cart2_items.html", context)
+
+def cart2_save(request, id):
+    CartFormSet = modelformset_factory(Cart, form=Cart_Form)
+    if "add_item" in request.POST:
+        to_add = CartFormSet(request.POST, prefix="add_item")
+        to_add.save()
+        return HttpResponseRedirect("/polls/cart2_items/{}".format(id))
+    elif "delete" in request.POST:
+        index = int(request.POST["delete"].strip("Delete Item "))
+        cart_item = Cart.objects.filter(purchase=id)[index - 1]
+        cart_item.delete()
+        return HttpResponseRedirect("/polls/cart2_items/{}".format(id))
+    elif "checkout" in request.POST:
+        checkout_cart()
+        return HttpResponseRedirect("/polls/thanks")
+    elif "search_barcode" in request.POST:
+        barcode = request.POST["barcode"]
+        print("Barcode: {}".format(barcode))
+        return HttpResponseRedirect("/polls/cart2_items_search/{}/{}".format(id, barcode))

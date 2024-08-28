@@ -6,7 +6,7 @@
     <h2>To Add</h2>
     {{ formset_1.management_form }}
     <table>
-        {% for form in formset_1 %}
+        {% for form in add_item %}
         {{ form }}
         <input type="submit" name="add_item" value="Add Item">
         {% endfor %}

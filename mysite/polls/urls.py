@@ -24,9 +24,8 @@ urlpatterns = [
 ] + [
     path("cart2_contact/", views.cart2_contact, name="cart2_contact"),
     path("cart2_contact_get/", views.cart2_contact_get, name="cart2_contact_get"),
-    path("cart2_items/<id>/", views.cart2_items, name="cart2_items"),
+    path("cart2_items/<id>/<barcode>/", views.cart2_items, name="cart2_items"),
     path("cart2_save/<id>/", views.cart2_save, name="cart2_save"),
-    path("cart2_items_search/<id>/<barcode>/", views.cart2_items_search, name="cart2_items_search")
 ]
 
 #A purchase has purchase_contact, purchase_contact_get, purchase_items, purchase_save, and thanks.

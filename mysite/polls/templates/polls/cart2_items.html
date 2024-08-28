@@ -4,9 +4,9 @@
 <form action="{% url 'polls:cart2_save' purchase.pk %}" method="post">
     {% csrf_token %}
     <h2>To Add</h2>
-    {{ formset_1.management_form }}
+    {{ add_item_fs.management_form }}
     <table>
-        {% for form in formset_1 %}
+        {% for form in add_item_fs %}
         <input type="text" name="barcode" placeholder="Search By Barcode">
         <input type ="submit" name="search_barcode">
         {{ form }}
@@ -14,12 +14,13 @@
         {% endfor %}
     </table>
     <h2>Current Cart</h2>
-    {{ formset_2.management_form }}
+    {{ cart_fs.management_form }}
     <table>
-        {% for form in formset_2 %}
+        {% for form in cart_fs %}
         {{ form }}
         <input type="submit" name="delete" value="Delete Item {{ forloop.counter }}">
         {% endfor %}
     </table>
     <input type="submit" name="checkout" value="Checkout">
 </form>
+Your Total: {{total}}

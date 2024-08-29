@@ -1,6 +1,6 @@
 from django.http import HttpResponseRedirect
 from .models import (SimplePurchaseForm, PurchaseForm, Employee, Department, Item_Purchase, Purchase,
-                     Item_Purchase_Form, getItemPurchaseForm, getCart, Cart, Cart_Form, checkout_cart)
+                     Item_Purchase_Form, getItemPurchaseForm, getCart, Cart, Cart_Form, checkout_cart, Item)
 from django.shortcuts import render
 from django.forms import modelformset_factory
 from django.db.models import F, Sum
@@ -93,19 +93,22 @@ def cart2_contact_get(request):
     dept_obj = Department.objects.get(cost_center=dept)
     purchase = Purchase(employee=employee_obj, dept=dept_obj)
     purchase.save()
-    return HttpResponseRedirect("/polls/cart2_items/{}/{}".format(purchase.pk, None))
+    return HttpResponseRedirect("/polls/cart2_items/{}".format(purchase.pk))
 
-def cart2_items(request, id, barcode=None):
-    barcode = None if barcode == "None" else barcode
+def cart2_items(request, id):
     purchase = Purchase.objects.get(pk=id)
-    Enter_Class = modelformset_factory(Cart, form=getCart(id, edit=True, barcode=barcode), max_num=1)
-    Cart_Class = modelformset_factory(Cart, form=getCart(id, edit=False), max_num=0)
+    Enter_Class = modelformset_factory(Cart, form=getCart(id, hide_item=False), max_num=1)
+    Cart_Class = modelformset_factory(Cart, form=getCart(id, hide_item=True), max_num=0)
     add_item_formset = Enter_Class(queryset=Cart.objects.none(), prefix="add_item")
     current_cart = Cart.objects.filter(purchase=id)
     cart_formset = Cart_Class(queryset=current_cart, prefix="cart")
     total = current_cart.annotate(price = F("item__cost") * F("quantity")).aggregate(Sum("price"))["price__sum"]
     clean_total = "$0.00" if total is None else f"${total:.2f}"
-    context = {"purchase": purchase, "add_item_fs": add_item_formset, "cart_fs": cart_formset, "total": clean_total}
+    cart_items = [cart_object.item.name for cart_object in current_cart]
+    cart_forms = [form for form in cart_formset]
+    cart = zip(cart_items, cart_forms)
+    context = {"purchase": purchase, "add_item_fs": add_item_formset, "cart_fs": cart_formset, "total": clean_total,
+               "cart": cart}
     return render(request, "polls/cart2_items.html", context)
 
 def cart2_save(request, id):
@@ -113,15 +116,23 @@ def cart2_save(request, id):
     if "add_item" in request.POST:
         to_add = CartFormSet(request.POST, prefix="add_item")
         to_add.save()
-        return HttpResponseRedirect("/polls/cart2_items/{}/{}".format(id, None))
+        return HttpResponseRedirect("/polls/cart2_items/{}".format(id))
     elif "delete" in request.POST:
         index = int(request.POST["delete"].strip("Delete Item "))
         cart_item = Cart.objects.filter(purchase=id)[index - 1]
         cart_item.delete()
-        return HttpResponseRedirect("/polls/cart2_items/{}/{}".format(id, None))
+        return HttpResponseRedirect("/polls/cart2_items/{}".format(id))
     elif "checkout" in request.POST:
-        checkout_cart()
+        cart = CartFormSet(request.POST, prefix="cart", queryset=Cart.objects.filter(purchase=id))
+        if cart.is_valid():
+            cart.save()
+            checkout_cart(id)
+        else:
+            print("Errors")
+            print(cart.errors)
         return HttpResponseRedirect("/polls/thanks")
-    elif "search_barcode" in request.POST:
-        barcode = request.POST["barcode"]
-        return HttpResponseRedirect("/polls/cart2_items/{}/{}".format(id, barcode))
+    elif "scan_barcode" in request.POST:
+        barcode = int(request.POST["barcode"])
+        cart_item = Cart(purchase_id=id, item_id=barcode, quantity=1)
+        cart_item.save()
+        return HttpResponseRedirect("/polls/cart2_items/{}".format(id))

@@ -90,24 +90,21 @@ def getItemPurchaseForm(purchase_id):
             self.fields["purchase"].widget = forms.HiddenInput()
     return IPF
 
-def getCart(purchase_id, edit=True, barcode=None):
+def getCart(purchase_id, hide_item):
     class X(Cart_Form):
         def __init__(self, *args, **kwargs):
             initial = kwargs.get('initial', {})
             initial["purchase"] = Purchase.objects.get(pk=purchase_id)
-            if barcode is not None:
-                initial["item"] = Item.objects.get(id=barcode)
             kwargs['initial'] = initial
             super().__init__(*args, **kwargs)
             self.fields["purchase"].widget = forms.HiddenInput()
-            if not edit:
-                self.fields["item"].disabled = True
-                self.fields["quantity"].disabled = True
+            if hide_item:
+                self.fields["item"].widget = forms.HiddenInput()
     return X
 
-def checkout_cart():
-    for cart_item in Cart.objects.all():
+def checkout_cart(id):
+    for cart_item in Cart.objects.filter(purchase=id):
         item_purchase = Item_Purchase(purchase=cart_item.purchase, item=cart_item.item, quantity=cart_item.quantity)
         item_purchase.save()
-    Cart.objects.all().delete()
+    Cart.objects.filter(purchase=id).delete()
 

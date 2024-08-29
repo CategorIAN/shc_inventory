@@ -1,7 +1,7 @@
 from django.db import models
 from django.forms import ModelForm
-from django.db.models.functions import Now
 from django import forms
+from django.db.models.functions import Now
 
 class Department(models.Model):
     cost_center = models.IntegerField(primary_key=True)
@@ -19,7 +19,6 @@ class Item(models.Model):
     def __str__(self):
         return "{} (${})".format(self.name, self.cost)
 
-
 class Employee(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
@@ -27,9 +26,7 @@ class Employee(models.Model):
 
     def __str__(self):
         return self.name
-
 #=========================================================================================
-
 class Purchase(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True)
     dept = models.ForeignKey(Department, on_delete=models.CASCADE, null=True)
@@ -43,53 +40,17 @@ class Cart(models.Model):
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, null=True)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, null=True)
     quantity = models.IntegerField(default=1)
-
-class SimplePurchase(models.Model):
-    created_at = models.DateTimeField(db_default=Now(), primary_key=True)
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True)
-    dept = models.ForeignKey(Department, on_delete=models.CASCADE, null=True)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, null=True)
-    quantity = models.IntegerField(default=1)
-
 #===========================================================================================
-
-class SimplePurchaseForm(ModelForm):
-    class Meta:
-        model = SimplePurchase
-        fields = ["employee", "dept", "item", "quantity"]
-
 class PurchaseForm(ModelForm):
     class Meta:
         model = Purchase
         fields = ["employee", "dept"]
 
-class Item_Purchase_Form(ModelForm):
-    class Meta:
-        model = Item_Purchase
-        fields = ["purchase", "item", "quantity"]
-
 class Cart_Form(ModelForm):
     class Meta:
         model = Cart
         fields = ["purchase", "item", "quantity"]
-
-#===========================================================================================
-class ItemChoiceField(forms.ModelChoiceField):
-    def label_from_instance(self, obj):
-        return f'{obj.name} ({obj.id})'
-
-#===========================================================================================
-
-def getItemPurchaseForm(purchase_id):
-    class IPF(Item_Purchase_Form):
-        def __init__(self, *args, **kwargs):
-            initial = kwargs.get('initial', {})
-            initial["purchase"] = Purchase.objects.get(pk=purchase_id)
-            kwargs['initial'] = initial
-            super().__init__(*args, **kwargs)
-            self.fields["purchase"].widget = forms.HiddenInput()
-    return IPF
-
+#=======================================Helper Functions====================================================
 def getCart(purchase_id, hide_item):
     class X(Cart_Form):
         def __init__(self, *args, **kwargs):
@@ -103,8 +64,12 @@ def getCart(purchase_id, hide_item):
     return X
 
 def checkout_cart(id):
-    for cart_item in Cart.objects.filter(purchase=id):
-        item_purchase = Item_Purchase(purchase=cart_item.purchase, item=cart_item.item, quantity=cart_item.quantity)
-        item_purchase.save()
-    Cart.objects.filter(purchase=id).delete()
+    cart = Cart.objects.filter(purchase=id)
+    for cart_item in cart:
+        Item_Purchase(purchase=cart_item.purchase, item=cart_item.item, quantity=cart_item.quantity).save()
+    cart.delete()
+
+def money_string(value):
+    return "$0.00" if value is None else f"${value:.2f}"
+
 

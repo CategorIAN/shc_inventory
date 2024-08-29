@@ -1,7 +1,0 @@
-<p>Hello, {{employee.name}}! What are you purchasing for {{dept.name}}, today?</p>
-
-<form action="{% url 'polls:purchase_save'%}" method="post">
-    {% csrf_token %}
-    {{ formset }}
-    <input type="submit" value="Submit">
-</form>
